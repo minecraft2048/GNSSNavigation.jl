@@ -8,9 +8,8 @@ using Unitful
 using PrecompileTools
 using GNSSDecoder
 using PrettyTables
+using TrackingSummaryDefinition
 
-include("tracking_summary.jl")
-export TrackingSummary
 
 include("navigate.jl")
 export navigate

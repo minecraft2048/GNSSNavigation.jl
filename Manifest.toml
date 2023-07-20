@@ -1097,10 +1097,10 @@ deps = ["GNSSSignals", "PrettyTables"]
 path = "../TrackingSummaryDefinition"
 uuid = "8b83e296-8563-4be5-bd36-44dad72008b6"
 version = "1.0.0-DEV"
-weakdeps = ["Tracking"]
+weakdeps = ["Tracking", "Unitful"]
 
     [deps.TrackingSummaryDefinition.extensions]
-    TrackingSummaryDefinitionTrackingEx = "Tracking"
+    TrackingSummaryDefinitionTrackingExt = ["Tracking", "Unitful"]
 
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
