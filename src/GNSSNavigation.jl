@@ -9,12 +9,15 @@ using PrecompileTools
 using GNSSDecoder
 using PrettyTables
 using TrackingSummaryDefinition
+using StaticArraysCore  
+using TrackingLoopFilters
+using StructArrays
 
 
 include("navigate.jl")
 export navigate
 
-@setup_workload begin
+#= @setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
     rate = 2.048e6 
@@ -30,5 +33,9 @@ export navigate
     end
 end
 
-
+ =#
+#= 
+ include("precompile.jl")
+ _precompile_()
+ =# 
 end

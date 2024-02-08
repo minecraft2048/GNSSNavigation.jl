@@ -77,7 +77,7 @@
   return ret
 end =#
 
-function navigate(dat, n, acq_results, samplerate; intermediate_freq=0, dsp_callback=nothing, userdata=nothing, silent=false) where T <: Number
+function navigate(dat, n, acq_results, samplerate; intermediate_freq=0, carrier_loop_filter_bw_wide=40, flip_code_phase=true, dsp_callback=nothing, userdata=nothing, silent=false) where T <: Number
   #resampler_ctx_ch0 = FIRFilter(7//4)
   #fp = Kea.resample(fp[:,1], resampler_ctx_ch0)
   trk_results = similar(acq_results, Tracking.TrackingResults)
@@ -94,7 +94,7 @@ function navigate(dat, n, acq_results, samplerate; intermediate_freq=0, dsp_call
   end
   #init states
   Threads.@threads for i in eachindex(trk_results)
-    @views trk_results[i] = track(ComplexF32.(dat[1:ms_10]), trk_states[i], samplerate*Hz;intermediate_frequency=intermediate_freq*Hz)
+    @views trk_results[i] = track(ComplexF32.(dat[1:ms_10]), trk_states[i], samplerate*Hz;intermediate_frequency=intermediate_freq*Hz, carrier_loop_filter_bandwidth=carrier_loop_filter_bw_wide*Hz)
   end
   filtered_prompt = Vector{ComplexF64}()
   clock_drifts = Vector{Float64}()
@@ -107,14 +107,14 @@ function navigate(dat, n, acq_results, samplerate; intermediate_freq=0, dsp_call
   data = Matrix{Any}(undef, length(trk_results),length(header))
 
 
-  for kk in 2:n
+  for kk in 1:n
     #fp = Kea.resample(fp[:,1], resampler_ctx_ch0)
     #println("Iteration $kk")
     #samples = ComplexF64.(fp[:,1].data);
     rate = samplerate*Hz;
     #dat = Ref(fp[:,1].data)
     Threads.@threads for i in eachindex(trk_results)
-      @views trk_results[i] = track(dat[((ms_10*kk)+1):(ms_10*(kk+1))], get_state(trk_results[i]), rate;intermediate_frequency=intermediate_freq*Hz);
+      @views trk_results[i] = track(dat[((ms_10*kk)+1):(ms_10*(kk+1))], get_state(trk_results[i]), rate;intermediate_frequency=intermediate_freq*Hz, carrier_loop_filter_bandwidth=carrier_loop_filter_bw_wide*Hz);
       #append!(filtered_prompt,trk_res.filtered_prompt)
       #println(trk_results[i].cn0)
       decoder_states[i] = decode(decoder_states[i], get_bits(trk_results[i]), get_num_bits(trk_results[i]))
@@ -165,7 +165,7 @@ function navigate(dat, n, acq_results, samplerate; intermediate_freq=0, dsp_call
       subctr = subctr +1
     end
 
-    append!(ret, (((ms_10*kk)+1, a, nav, ()),))
+    append!(ret, (((ms_10*kk)+1, a, nav, (ms_10*(kk+1))),))
 
     if !silent
       for (idx,prn_val) in enumerate(a)
